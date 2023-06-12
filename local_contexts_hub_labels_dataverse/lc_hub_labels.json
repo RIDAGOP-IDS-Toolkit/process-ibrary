@@ -1,0 +1,272 @@
+{
+  "title": "Local Contexts Hub Labels",
+  "process": {
+    "comment": "uri:http://localhost:8000/data/schema/idstk_schema/process/instances/lc_hub_labels.json",
+    "instance": {
+      "name": "tk_labels",
+      "title": "Local Contexts Hub Labels",
+      "description": "Add Local Contexts Project reference to a dataset (dataverse)",
+      "services": {
+        "lc_hub": {
+          "title": "LC Hub",
+          "ui": {
+            "inputFields": {
+              "project_id": {
+                "label": "LC Hub Project ID",
+                "default": "259854f7-b261-4c8c-8556-4b153deebc18"
+              }
+            },
+            "buttons": {
+              "fetch_labels": {
+                "label": "Fetch labels",
+                "triggerActivity": "read_lc_hub_data"
+              }
+            }
+          },
+          "activities": {
+            "read_lc_hub_data": {
+              "title": "Fetch project data",
+              "bridgeCapability": "read_dataset_metadata",
+              "preProcess": "checkProjectID",
+              "parameters": {
+                "project_id": {
+                  "field": "project_id"
+                }
+              },
+              "storeResult": {
+                "context": "process",
+                "key": "lc_hub_project_labels"
+              },
+              "subActivities": {
+                "displayLabels": {
+                  "title": "Display project labels",
+                  "moduleFunction": "display_project_labels",
+                  "parameters": {
+                    "lc_hub_project_data": {
+                      "parent": true
+                    }
+                  },
+                  "ui": {
+                    "resultAsOutputHtml": true
+                  }
+                }
+              },
+              "comment": "input_field can be omitted if there is an input_actions set"
+            }
+          },
+          "bridge": {
+            "source": {
+              "instance": {
+                "execute": {
+                  "openapiSchemaUri": "openapi/localcontextshub_openapi.json"
+                },
+                "capabilities": {
+                  "read_dataset_metadata": {
+                    "operation": {
+                      "path": "/api/v1/projects/{project_id}/",
+                      "method": "get"
+                    }
+                  },
+                  "download_dataset_metadata": {
+                    "operation": {
+                      "path": "/projects/download/{project_id}/",
+                      "method": "get"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "data_repo": {
+          "title": "Dataverse",
+          "ui": {
+            "inputFields": {
+              "dataverseInstance": {
+                "label": "Dataverse instance",
+                "default": "https://ridagop.net"
+              },
+              "data_repo_id": {
+                "label": "Dataverse dataset doi",
+                "default": "doi:10.5072/FK2/ZPGIZV",
+                "inputActions": {
+                  "autoAction": "read_dataset"
+                }
+              },
+              "apiKey": {
+                "label": "API Key",
+                "default": "84a1ebba-357b-4cd6-b965-8810a8e3866d"
+              }
+            },
+            "buttons": {
+              "udpate": {
+                "label": "Update Metadata",
+                "triggerActivity": "postDatasetMetadata"
+              }
+            }
+          },
+          "parameters": {
+            "datasetId": {
+              "field": "data_repo_id"
+            },
+            "serverUri": {
+              "field": "dataverseInstance"
+            }
+          },
+          "activities": {
+            "read_dataset": {
+              "title": "Fetch dataset metadata",
+              "storeResult": {
+                "key": "dataset"
+              },
+              "requiredActivities": [
+                {
+                  "serviceName": "lc_hub",
+                  "activityName": "read_lc_hub_data",
+                  "errorMessage": "Please fetch the Local Contexts project Labels first"
+                }
+              ],
+              "parameters": {
+                "persistentId": {
+                  "field": "data_repo_id"
+                }
+              },
+              "bridgeCapability": "read_dataset_metadata",
+              "subActivities": {
+                "findReference": {
+                  "moduleFunction": "findLCHubProjectReference",
+                  "title": "Find LCHub Project Reference",
+                  "parameters": {
+                    "datasetData": {
+                      "parent": true
+                    },
+                    "lc_hub_project_data": {
+                      "store": {
+                        "context": "process",
+                        "key": "lc_hub_project_labels"
+                      }
+                    }
+                  },
+                  "storeResult": {
+                    "key": "referenceFound"
+                  },
+                  "subActivities": {
+                    "createLCHubReference": {
+                      "title": "Create LCHub Reference",
+                      "moduleFunction": "createLCHubReference",
+                      "priority": 1,
+                      "parameters": {
+                        "lc_hub_project_data": {
+                          "store": {
+                            "context": "process",
+                            "key": "lc_hub_project_labels"
+                          }
+                        }
+                      },
+                      "storeResult": {
+                        "key": "referenceData"
+                      }
+                    },
+                    "updateDatasetMetadata": {
+                      "title": "Update the metadata of the dataset",
+                      "moduleFunction": "updateDatasetMetadata",
+                      "storeResult": {
+                        "key": "edited_metadata"
+                      },
+                      "parameters": {
+                        "datasetData": {
+                          "store": {
+                            "context": "service",
+                            "key": "dataset"
+                          }
+                        },
+                        "referenceFound": {
+                          "store": {
+                            "context": "service",
+                            "key": "referenceFound"
+                          }
+                        },
+                        "referenceData": {
+                          "store": {
+                            "context": "service",
+                            "key": "referenceData"
+                          }
+                        }
+                      }
+                    },
+                    "display_updated_description": {
+                      "title": "Display updated dataset description",
+                      "moduleFunction": "display_updated_description",
+                      "parameters": {
+                        "referenceFound": {
+                          "store": {
+                            "context": "service",
+                            "key": "referenceFound"
+                          }
+                        }
+                      },
+                      "ui": {
+                        "resultAsOutputHtml": "udpated_dataset"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "postDatasetMetadata": {
+              "title": "Post updated metadata",
+              "bridgeCapability": "update_dataset_metadata",
+              "parameters": {
+                "persistentId": {
+                  "field": "data_repo_id"
+                },
+                "versionId": {
+                  "constant": ":draft"
+                }
+              },
+              "requestBody": {
+                "data": {
+                  "store": {
+                    "context": "service",
+                    "key": "edited_metadata"
+                  }
+                }
+              },
+              "subActivities": {
+                "publishUpdatedDataset": {
+                  "title": "Publish updated dataset",
+                  "bridgeCapability": "publish_dataset",
+                  "preProcess": "shouldPublish",
+                  "parameters": {
+                    "persistentId": {
+                      "field": "data_repo_id"
+                    },
+                    "type": {
+                      "constant": "minor"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "bridge": {
+            "source": {
+              "uri": "instances/bridge/dataverse_bridge_openapi.json"
+            },
+            "server": {
+              "field": "dataverseInstance"
+            },
+            "authorization": {
+              "ApiKeyAuth": {
+                "field": "apiKey"
+              }
+            }
+          }
+        }
+      },
+      "scriptUri": "http://localhost:8080/data/scripts/process/lc_hub_labels.js"
+    }
+  },
+  "local_prefix_path": "data/",
+  "schemaUri": "http://localhost:8080/data/schemas/ridagop-ids-toolkit.schema.json"
+}
