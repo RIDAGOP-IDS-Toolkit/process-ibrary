@@ -17,7 +17,6 @@ Beware that you need to update the links in respect to your final file structure
     assets
 
 - lc_hub_labels_no_ui.json / lc_hub_labels.json
-    schemaUri: url of the toolkit schema
     process.instance.scriptUri: lc_hub_labels.js
     services.data_repo.bridge.source.uri: dataverse_bridge_openapi.json
     process.instance.services.lc_hub.bridge.source.instance.execute.openapiSchemaUri: localcontextshub_openapi.json
@@ -28,4 +27,4 @@ Beware that you need to update the links in respect to your final file structure
 
 
 Beware that you still need the toolkit
-module (https://www.npmjs.com/package/ridagop-toolkit) and include the toolkit schema (__TODO__).
+module (https://www.npmjs.com/package/ridagop-toolkit).

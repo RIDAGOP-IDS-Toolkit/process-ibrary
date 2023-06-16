@@ -58,7 +58,7 @@
             "source": {
               "instance": {
                 "execute": {
-                  "openapiSchemaUri": "openapi/localcontextshub_openapi.json"
+                  "openapiSchemaUri": "localcontextshub_openapi.json"
                 },
                 "capabilities": {
                   "read_dataset_metadata": {
@@ -251,7 +251,7 @@
           },
           "bridge": {
             "source": {
-              "uri": "instances/bridge/dataverse_bridge_openapi.json"
+              "uri": "dataverse_bridge_openapi.json"
             },
             "server": {
               "field": "dataverseInstance"
@@ -264,9 +264,8 @@
           }
         }
       },
-      "scriptUri": "http://localhost:8080/data/scripts/process/lc_hub_labels.js"
+      "scriptUri": "lc_hub_labels.js"
     }
   },
-  "local_prefix_path": "data/",
-  "schemaUri": "http://localhost:8080/data/schemas/ridagop-ids-toolkit.schema.json"
+  "local_prefix_path": ""
 }

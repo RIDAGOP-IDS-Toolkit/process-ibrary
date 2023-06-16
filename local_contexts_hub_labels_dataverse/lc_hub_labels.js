@@ -1,5 +1,3 @@
-import {getToolkit} from "../../../../src/models/tk_model";
-
 /**
  * this is for when one would have a client-module bridge
  * @param project_id
@@ -344,7 +342,7 @@ export function createLCHubReference(lc_hub_project_data) {
  */
 export function shouldPublish(persistentId, type) {
   // console.log("should publish", persistentId, type)
-  const dataset = getToolkit().getStorageValue("dataset", "data_repo")
+  const dataset = Window.getToolkit().getStorageValue("dataset", "data_repo")
   if (dataset.data.latestVersion.versionState === "DRAFT") {
     throw new Error("draft will not be published", {cause: "cancel"})
   }
